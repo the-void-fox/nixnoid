@@ -10,6 +10,7 @@
 
 let
   apps = config.custom.apps;
+  inherit (config.custom.desktop) wallpaper;
 
   # ID темы hyprstack — имя файла, если оно вида hyprstack-custom-<16 hex>,
   # иначе sha256 от имени (catalogue() в shell/assets/theme_manager.py).
@@ -159,6 +160,18 @@ in
             else
               warnEcho "hyprstack: не удалось применить тему ${theme}, примени вручную"
             fi
+          fi
+        '';
+
+        # Обои тоже выбирают в GUI, и hyprstack помнит путь к файлу. Ставим
+        # свои, только если того файла больше нет (или обои не выбирались):
+        # иначе пропавшая картинка оставляла чёрный экран. -N — не перекрашивать
+        # схему под обои.
+        home.activation.hyprstackWallpaper = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+          current=$(cat "${config.xdg.stateHome}/hyprstack/wallpaper/path.txt" 2>/dev/null || true)
+          if [ ! -e "$current" ]; then
+            run ${lib.getExe' config.programs.hyprstack.package "hyprstack"} wallpaper -N -f ${wallpaper} \
+              || warnEcho "hyprstack: не удалось поставить обои, вручную: hyprstack wallpaper -f ${wallpaper}"
           fi
         '';
       };

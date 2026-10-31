@@ -15,6 +15,7 @@ usage() {
   votv update       обновить установленную версию до последней
   votv install      поставить любую версию из каталога
   votv yeetpatch    скачать свежий YeetPatch
+  votv icon         достать значок ярлыка из VotV.exe
   votv help         эта справка
 
   Игра:        $game
@@ -50,8 +51,24 @@ yeetpatch() {
   bash "$script" "$@"
 }
 
+# Значок ярлыка — из самого VotV.exe: картинка игры чужая, в репозиторий её не
+# кладём. Крупнее 64×64 в exe нет.
+icon() {
+  [[ -f $exe ]] || return 0
+  local dir=${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor/64x64/apps
+  local tmp
+  tmp=$(mktemp -d)
+  if wrestool -x -t 14 "$exe" >"$tmp/votv.ico" 2>/dev/null &&
+    icotool -x -w 64 "$tmp/votv.ico" -o "$tmp/votv.png" 2>/dev/null; then
+    mkdir -p "$dir"
+    mv "$tmp/votv.png" "$dir/votv.png"
+  fi
+  rm -rf "$tmp"
+}
+
 play() {
   [[ -f $exe ]] || fail "Игры нет в $game. Поставить: votv install"
+  icon
   # GAMEID нужен для исправлений protonfixes; у этой игры своего нет.
   WINEPREFIX=$prefix GAMEID=umu-default PROTONPATH=$PROTON exec umu-run "$exe" "$@"
 }
@@ -71,14 +88,17 @@ case ${1:-play} in
     fi
     status=0
     yeetpatch update "$exe" || status=$?
+    icon
     if $pause; then read -rp "Enter — закрыть окно " _ || true; fi
     exit "$status"
     ;;
   install)
     shift
     yeetpatch install "$@"
+    icon
     ;;
   yeetpatch) fetch_yeetpatch ;;
+  icon) icon ;;
   help | -h | --help) usage ;;
   *)
     usage

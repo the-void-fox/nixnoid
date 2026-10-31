@@ -11,6 +11,21 @@ let
 
   fontPackages = builtins.filter lib.isDerivation config.fonts.packages;
 
+  # Все обои NixOS из nixpkgs, по файлу на каждые (в пакетах лежат копии под
+  # разные окружения). Без загрузочного варианта simple-dark-gray.
+  nixosWallpapers = pkgs.linkFarm "nixos-wallpapers" (
+    lib.mapAttrsToList
+      (_: w: {
+        name = builtins.unsafeDiscardStringContext (baseNameOf w.gnomeFilePath);
+        path = w.gnomeFilePath;
+      })
+      (
+        lib.filterAttrs (
+          name: w: lib.isDerivation w && !lib.hasSuffix "bootloader" name
+        ) pkgs.nixos-artwork.wallpapers
+      )
+  );
+
   # Умолчания fontconfig в его собственном виде — для песочниц Flatpak.
   aliases = lib.concatStrings (
     lib.mapAttrsToList
@@ -51,6 +66,13 @@ in
     description = "Курсор для всех сессий и приложений.";
   };
 
+  options.custom.desktop.wallpaper = lib.mkOption {
+    type = lib.types.path;
+    # Снежинка из nixos-artwork, а не своя копия в репозитории.
+    default = "${pkgs.nixos-artwork.wallpapers.binary-black}/share/backgrounds/nixos/nix-wallpaper-binary-black.png";
+    description = "Обои экрана входа и hyprstack (пока в нём не выбраны другие).";
+  };
+
   options.custom.desktop.fonts = lib.mkOption {
     type = lib.types.attrsOf (lib.types.listOf lib.types.str);
     default = {
@@ -74,6 +96,15 @@ in
 
   config = {
     hm = {
+      # «Локальные обои» hyprstack берёт из <XDG_PICTURES_DIR>/Wallpapers — здесь
+      # это ~/Изображения. recursive: настоящий каталог со ссылками на файлы,
+      # потому что в ссылку на каталог hyprstack не заходит. Свои обои кладутся
+      # рядом, в сам Wallpapers.
+      home.file."Изображения/Wallpapers/NixOS" = {
+        source = nixosWallpapers;
+        recursive = true;
+      };
+
       home.pointerCursor = cursor // {
         enable = true;
         gtk.enable = true;

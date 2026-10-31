@@ -23,6 +23,7 @@ let
       gnused
       gnutar
       gzip
+      icoutils # значок из VotV.exe
       jq
       p7zip
       xxhash
@@ -44,7 +45,8 @@ in
       desktopName = "Voices of the Void";
       comment = "Через Proton; обновления — YeetPatch";
       exec = "votv";
-      icon = "applications-games";
+      # Достаёт `votv icon` из VotV.exe; пока его нет — значок по умолчанию.
+      icon = "votv";
       categories = [ "Game" ];
       # YeetPatch спрашивает в терминале, поэтому обновление — в нём.
       actions.update = {
