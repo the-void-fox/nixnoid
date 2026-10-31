@@ -1,0 +1,6 @@
+# Ссылки `nix build`: rebuild делает git add -A, и они уехали бы в коммит.
+result
+result-*
+
+# Локальные настройки Claude Code.
+.claude/settings.local.json

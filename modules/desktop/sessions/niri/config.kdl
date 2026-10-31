@@ -1,0 +1,45 @@
+// niri. Мониторы и курсор — в outputs.kdl и cursor.kdl, их пишет Nix из
+// пульта (modules/desktop/sessions/niri/default.nix); бинды — в binds.kdl.
+//
+// XWayland, агент polkit и окружение для systemd и D-Bus niri поднимает сам:
+// xwayland-satellite запускается из PATH, агент — от graphical-session.target.
+
+input {
+    focus-follows-mouse
+
+    keyboard {
+        xkb {
+            layout "us,ru"
+        }
+    }
+}
+
+// Панель, лаунчер и уведомления.
+spawn-at-startup "noctalia-shell"
+
+prefer-no-csd
+
+screenshot-path "~/Pictures/Screenshots/%Y-%m-%d %H-%M-%S.png"
+
+window-rule {
+    geometry-corner-radius 12
+    clip-to-geometry true
+}
+
+window-rule {
+    match title="^Picture-in-Picture$"
+    open-floating true
+    default-column-width { fixed 480; }
+    default-window-height { fixed 270; }
+}
+
+// Менеджеры паролей не попадают в запись экрана.
+window-rule {
+    match app-id=r#"^org\.keepassxc\.KeePassXC$"#
+    match app-id=r#"^org\.gnome\.World\.Secrets$"#
+    block-out-from "screen-capture"
+}
+
+include "binds.kdl"
+include "cursor.kdl"
+include "outputs.kdl"

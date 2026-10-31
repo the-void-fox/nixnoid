@@ -1,0 +1,129 @@
+/* Обнулить фон у всех контейнеров — оставить прозрачным */
+.background{
+  background-color: rgba(20, 20, 20, 0.95);
+  background-image: none;
+}
+
+/* Но окну вернуть обои (иначе и фон пропадёт) */
+window {
+  background-image: url("/etc/greetd/wallpaper.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #000000;
+}
+/* === Общий текст: светлый === */
+label {
+  color: #ffffff;
+  font-family: "Arial", sans-serif;
+}
+
+.clock {
+  color: #ffffff;
+  font-size: 48px;
+  font-weight: bold;
+}
+
+/* === СТЕКЛЯННАЯ ПАНЕЛЬ (полупрозрачная) ===
+   Замени селектор на реальный класс из GTK Inspector. */
+.background > box,
+window > box {
+  background-color: rgba(20, 20, 20, 0.45);   /* прозрачное тёмное стекло */
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  padding: 36px;
+}
+
+/* === Поля ввода: тёмные, светлый текст === */
+entry {
+  background-color: rgba(255, 255, 255, 0.08);  /* чуть светлее панели */
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  caret-color: #ffffff;
+  min-height: 22px;
+}
+
+entry:focus-within {
+  border: 1px solid #ffffff;
+  box-shadow: none;
+  outline: none;
+}
+
+/* === КНОПКИ: тёмные, СВЕТЛЫЙ текст === */
+button {
+  background-color: rgba(255, 255, 255, 0.1);
+  background-image: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 18px;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+button label,
+button > label {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+button:active {
+  background-color: rgba(255, 255, 255, 0.28);
+}
+
+/* === ВЫПАДАЮЩИЕ СПИСКИ: тёмный фон, светлый текст === */
+dropdown,
+dropdown > button {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+}
+
+dropdown > button label,
+dropdown label {
+  color: #ffffff;
+}
+
+/* Само раскрытое меню списка */
+dropdown popover,
+dropdown popover > contents,
+popover.menu,
+popover.menu > contents {
+  background-color: #1a1a1a;       /* непрозрачный тёмный, чтобы пункты читались */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+}
+
+/* Пункты внутри раскрытого списка */
+dropdown popover row label,
+popover.menu label,
+popover row label {
+  color: #ffffff;
+}
+
+/* Подсветка пункта при наведении */
+dropdown popover row:hover,
+popover row:hover,
+popover row:selected {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* === Кнопка «показать пароль» внутри поля === */
+entry button,
+entry image button {
+  background-color: transparent;
+  border: none;
+}
+entry button image,
+entry image {
+  color: #ffffff;
+}
+entry button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}

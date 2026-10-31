@@ -1,0 +1,122 @@
+# Конфиг driftwm. home-manager кладёт его в ~/.config/driftwm/config.toml и
+# дописывает в конец мониторы из пульта (modules/desktop/sessions/driftwm).
+# Курсор driftwm берёт из окружения — XCURSOR_* задаёт desktop/theme.nix.
+#
+# Справочник всех ключей — в самом пакете: etc/driftwm/config.reference.toml.
+# Проверка после правок: driftwm --check-config
+
+# autostart — ключ ВЕРХНЕГО уровня, не внутри [session]; должен стоять до любой
+# секции, иначе TOML отнесёт его к предыдущей таблице.
+# noctalia-shell — панель, лаунчер и OSD. driftwm поддерживает wlr-layer-shell,
+# поэтому панель рисуется поверх холста ровно так же, как в niri.
+autostart = ["noctalia-shell"]
+
+# Новые окна ставятся ВПРИТЫК к тому, что уже на виду, а не поверх него:
+# driftwm пробует края опорного окна (по часовой от ближайшего к центру экрана),
+# затем обходит соседей поиском в ширину. Опора — сфокусированное окно, пока оно
+# достаточно видно, иначе ближайший элемент в поле зрения. Если подходящего места
+# нет — "center".
+window_placement = "auto"
+
+[input.keyboard]
+# Те же две раскладки, что в niri (config.kdl: xkb layout "us,ru").
+layout = "us,ru"
+# layout_independent (дефолт true) сопоставляет привязки по физической позиции
+# клавиши, поэтому mod+z ниже срабатывает и в русской раскладке тоже.
+
+[zoom]
+# step: множитель на одно нажатие (дефолт 1.1 = +10%). 1.25 — заметно резвее.
+step = 1.25
+# mouse_speed: множитель зума колесом (дефолт 1.0 = один-в-один).
+mouse_speed = 2.0
+# fit_padding — отступ (в экранных px) при zoom-to-fit, дефолт 80.
+# Это ЕДИНСТВЕННЫЙ рычаг, влияющий на предел отдаления: сам предел жёстко зашит
+# в driftwm (`msg zoom`: «clamped: out to fit-all, in to native resolution»),
+# в конфиге ключа для него нет. Но нижняя граница считается от fit (в справочнике
+# сказано: fit * 0.5), поэтому больший отступ = дальше можно отъехать.
+fit_padding = 300.0
+
+# ── Навигация ───────────────────────────────────────────────────────────────
+[navigation]
+# center-nearest ищет ближайшее ОКНО в заданную сторону, и если там окон нет —
+# не происходит ничего («по пустому месту не работает»).
+# anchors добавляют на холст точки, которые center-nearest видит сам по себе,
+# даже когда там пусто. Координаты — Y вверх; эти пять повторяют центр и четыре
+# угловые закладки, которые driftwm по умолчанию вешает на mod+1…mod+4.
+anchors = [
+  [0, 0],
+  [-1750, 1750],
+  [1750, 1750],
+  [1750, -1750],
+  [-1750, -1750],
+]
+
+# ── Клавиатура ──────────────────────────────────────────────────────────────
+# Сливается с дефолтами driftwm; "none" снимает конкретный дефолт.
+[keybindings]
+# exec-terminal ищет терминал сам, но ghostty в его списке нет
+# (foot, alacritty, ptyxis, kitty, wezterm, gnome-terminal, konsole).
+"mod+return" = "exec ghostty"
+
+# Смена раскладки клавиатуры — как Mod+Z в niri. Перебивает дефолтный
+# zoom-reset, но сброс зума и так висит на mod+0.
+"mod+z" = "switch-layout next"
+
+# Аналог Mod+Tab (toggle-overview) из niri: вписать ВСЕ окна в экран.
+"mod+tab" = "zoom-to-fit"
+
+# Дефолтный бинд driftwm звал swaylock, которого в системе нет. Блокируем
+# ноктальным экраном — тем же, что и в niri.
+"mod+l" = "spawn noctalia-shell ipc call lockScreen lock"
+
+# Лаунчер — ноктальный, а не автоопределяемый fuzzel или rofi.
+"mod+d" = "spawn noctalia-shell ipc call launcher toggle"
+"mod+v" = "spawn noctalia-shell ipc call launcher clipboard"
+# Скриншоты. mod+s занят именно этим, как Super+S в niri — там это была
+# встроенная команда screenshot, и мышечная память та же.
+#   region   — выбрать область мышью, сохранить + положить в буфер
+#   screen   — весь активный монитор
+#   annotate — выбрать область и открыть редактор satty (стрелки, текст, размытие)
+"mod+s" = "spawn screenshot region"
+"mod+ctrl+s" = "spawn screenshot screen"
+"mod+shift+s" = "spawn screenshot annotate"
+
+# Меню сессии — здесь: mod+s отдан скриншоту.
+"mod+escape" = "spawn noctalia-shell ipc call sessionMenu toggle"
+"mod+n" = "spawn noctalia-shell ipc call controlCenter toggle"
+
+# Снимок сразу в буфер, без файла.
+"Print" = "spawn grim - | wl-copy"
+"shift+Print" = "spawn grim -g \"$(slurp -d)\" - | wl-copy"
+
+# ── Мышь ────────────────────────────────────────────────────────────────────
+# Ближайшее к «жестам мышью», что driftwm умеет сам: center-nearest берёт
+# направление из направления протяжки. То есть зажал mod+ctrl, дёрнул мышь в
+# сторону — фокус уехал к ближайшему окну в ту сторону. Это ЧЕТЫРЕ направления,
+# а не распознавание нарисованных символов.
+[mouse.on-window]
+# Контекст on-window проверяется РАНЬШЕ, чем anywhere, поэтому mod+ЛКМ поверх
+# окна двигает окно, а на пустом холсте тот же mod+ЛКМ проваливается в
+# [mouse.anywhere] ниже и по-прежнему тянет камеру. Дефолты на alt+... остаются.
+"mod+left" = "move-window"
+"mod+right" = "resize-window"
+# Вместо дефолтного toggle-fullscreen (разворот по колёсику) — fit-window, то
+# самое «приблизить»: центрирует, сбрасывает зум и вписывает окно в экран, как
+# двойной клик по заголовку.
+"mod+middle" = "fit-window"
+
+[mouse.anywhere]
+# Средняя кнопка тянет холст откуда угодно — и с пустого места, и поверх окна,
+# без всяких модификаторов. Привычная "рука" как в картах и САПР. Дефолтное
+# перетаскивание левой работает только на пустом холсте (см. [mouse.on-canvas]),
+# а поверх окна левая занята фокусом и перетаскиванием самого окна.
+"middle" = "pan-viewport"
+"mod+left" = "pan-viewport"
+# Прыжок к ближайшему окну ИЛИ якорю (см. [navigation] anchors выше) в сторону
+# протяжки.
+"mod+ctrl+left" = "center-nearest"
+"mod+wheel-scroll" = "zoom"
+
+[mouse.on-canvas]
+"left" = "pan-viewport"
+"wheel-scroll" = "zoom"

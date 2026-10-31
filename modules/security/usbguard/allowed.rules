@@ -1,0 +1,9 @@
+# Белый список USBGuard. Всё, чего здесь нет и что подключено уже после
+# загрузки, блокируется. Строки сюда дописывает и кнопка «Разрешить навсегда»
+# в уведомлении — постоянными они становятся после rebuild.
+allow id 057e:2009 # Nintendo Switch Pro Controller
+allow id 8087:0aaa # Intel Bluetooth 9460/9560
+allow id 0781:557d # SanDisk Cruzer Force
+allow id 0c00:1000 # Mad Dog GK150K, стрим-панель
+allow id 2e8a:0003 # Raspberry Pi RP2040 в режиме загрузчика
+allow id 0c76:161e # USB-микрофон (JMTek USB PnP Audio)
