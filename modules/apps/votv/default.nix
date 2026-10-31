@@ -38,21 +38,35 @@ let
   };
 in
 {
-  hm.home.packages = [
-    votv
-    (pkgs.makeDesktopItem {
-      name = "votv";
-      desktopName = "Voices of the Void";
-      comment = "Через Proton; обновления — YeetPatch";
-      exec = "votv";
-      # Достаёт `votv icon` из VotV.exe; пока его нет — значок по умолчанию.
-      icon = "votv";
-      categories = [ "Game" ];
-      # YeetPatch спрашивает в терминале, поэтому обновление — в нём.
-      actions.update = {
-        name = "Обновить (YeetPatch)";
-        exec = "${lib.getExe config.custom.apps.terminal.package} -e votv update --pause";
-      };
-    })
-  ];
+  options.custom.apps.votv.enable = lib.mkEnableOption "Voices of the Void (нужны и игры)" // {
+    default = true;
+  };
+
+  config = lib.mkIf config.custom.apps.votv.enable {
+    # umu-run берётся из games.nix.
+    assertions = [
+      {
+        assertion = config.custom.apps.games.enable;
+        message = "custom.apps.votv требует custom.apps.games: без него нет umu-run.";
+      }
+    ];
+
+    hm.home.packages = [
+      votv
+      (pkgs.makeDesktopItem {
+        name = "votv";
+        desktopName = "Voices of the Void";
+        comment = "Через Proton; обновления — YeetPatch";
+        exec = "votv";
+        # Достаёт `votv icon` из VotV.exe; пока его нет — значок по умолчанию.
+        icon = "votv";
+        categories = [ "Game" ];
+        # YeetPatch спрашивает в терминале, поэтому обновление — в нём.
+        actions.update = {
+          name = "Обновить (YeetPatch)";
+          exec = "${lib.getExe config.custom.apps.terminal.package} -e votv update --pause";
+        };
+      })
+    ];
+  };
 }

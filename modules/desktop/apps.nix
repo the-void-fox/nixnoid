@@ -35,6 +35,12 @@ let
       );
     };
 
+  roles = [
+    "terminal"
+    "browser"
+    "fileManager"
+  ];
+
   desktop = role: "${cfg.${role}.desktopId}.desktop";
 in
 {
@@ -54,7 +60,8 @@ in
   };
 
   config = {
-    environment.systemPackages = lib.mapAttrsToList (_: app: app.package) cfg ++ [
+    # Списком, а не обходом cfg: в custom.apps лежат и переключатели групп.
+    environment.systemPackages = map (role: cfg.${role}.package) roles ++ [
       # Кто по старинке зовёт xterm, получает настоящий терминал.
       (pkgs.writeShellScriptBin "xterm" ''
         if [ "''${1:-}" = "-e" ]; then

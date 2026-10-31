@@ -39,6 +39,40 @@
   #   };
   # };
 
+  # ── Подсистемы ────────────────────────────────────────────────────────────
+  # Всё, что можно выключить, — здесь. Выключить: `= false;`. Строку убрать —
+  # останется значение по умолчанию, указано в конце каждой строки. Подробно —
+  # в описании опции в модуле, путь в скобках.
+
+  # Сеть (system/networking.nix).
+  custom.network.dnscrypt.enable = true; # DNS только шифрованно. По умолч. true
+  custom.network.tailscale.enable = true; # По умолч. true
+  custom.network.tailscale.exitNode = true; # быть выходным узлом. По умолч. true
+
+  # VPN и обход блокировок (system/vpn.nix). Всё по умолчанию false, туннель
+  # одновременно — один. Что включено и что поднято — команда `vpn`.
+  custom.vpn.amnezia.enable = false; # AmneziaVPN, туннель с окном
+  custom.vpn.wireguard.enable = false; # WireGuard, импорт через nmcli
+  custom.vpn.throne.enable = false; # VLESS/Trojan/…: прокси 127.0.0.1:2080
+  custom.vpn.throne.tun = false; # …или туннель на всю систему
+  custom.vpn.byedpi.enable = false; # обход DPI без сервера: SOCKS 127.0.0.1:1080
+  custom.vpn.tor.enable = false; # Tor: SOCKS 127.0.0.1:9050
+  # custom.vpn.tor.bridges = [ "obfs4 …" ]; # если Tor напрямую не пускают
+
+  # Защита (security/, system/boot.nix).
+  custom.secureBoot.enable = true; # без ключей в /etc/secureboot — false. По умолч. true
+  custom.security.usbguard.enable = true; # новые USB — по кнопке. По умолч. true
+  custom.hardening.signedModulesOnly = false; # на ядре 7.3 не грузится. По умолч. false
+
+  # Группы программ (apps/). По умолчанию все true. Утилиты (tools.nix) и
+  # файлы (files.nix) — основа, не выключаются; git остаётся и без dev.
+  custom.apps.dev.enable = true; # Rust, редакторы, Redot, Podman
+  custom.apps.games.enable = true; # Steam, Wine, Proton, лаунчеры
+  custom.apps.votv.enable = true; # Voices of the Void, нужны games
+  custom.apps.media.enable = true; # Krita, GIMP, Kdenlive, OBS
+  custom.apps.social.enable = true; # мессенджеры, KDE Connect, RustDesk
+  custom.apps.ai.enable = true; # ollama на ROCm, koboldcpp
+
   # Свои копии входов флейка: `rebuild --local hyprstack` соберёт систему
   # из этого каталога вместо github.
   custom.rebuild.localInputs = {

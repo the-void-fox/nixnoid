@@ -1,37 +1,49 @@
 # Графика, видео и звук: редакторы, запись, просмотр.
-{ inputs, pkgs, ... }:
+{
+  config,
+  inputs,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   imports = [ inputs.artcraft.nixosModules.default ];
 
-  programs.artcraft.enable = true; # ArtCraft от Storyteller.ai
+  options.custom.apps.media.enable = lib.mkEnableOption "графику, видео и звук" // {
+    default = true;
+  };
 
-  # Кодеки для всего, что играет медиа через GStreamer.
-  environment.systemPackages = with pkgs.gst_all_1; [
-    gstreamer
-    gst-plugins-base
-    gst-plugins-good
-    gst-plugins-ugly
-    gst-libav
-  ];
+  config = lib.mkIf config.custom.apps.media.enable {
+    programs.artcraft.enable = true; # ArtCraft от Storyteller.ai
 
-  hm.home.packages = with pkgs; [
-    krita
-    gimp
-    glaxnimate
-    kdePackages.kdenlive
-    obs-studio
-    showmethekey # нажатые клавиши на экране — для записи
-    audacity
-    ffmpeg
+    # Кодеки для всего, что играет медиа через GStreamer.
+    environment.systemPackages = with pkgs.gst_all_1; [
+      gstreamer
+      gst-plugins-base
+      gst-plugins-good
+      gst-plugins-ugly
+      gst-libav
+    ];
 
-    swayimg
-    clapper
-    kew
-  ];
+    hm.home.packages = with pkgs; [
+      krita
+      gimp
+      glaxnimate
+      kdePackages.kdenlive
+      obs-studio
+      showmethekey # нажатые клавиши на экране — для записи
+      audacity
+      ffmpeg
 
-  services.flatpak.packages = [
-    "com.github.libresprite.LibreSprite"
-    "io.github.nokse22.asciidraw"
-  ];
+      swayimg
+      clapper
+      kew
+    ];
+
+    services.flatpak.packages = [
+      "com.github.libresprite.LibreSprite"
+      "io.github.nokse22.asciidraw"
+    ];
+  };
 }

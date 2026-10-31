@@ -10,11 +10,11 @@
 ## Где что
 
 ```
-configuration.nix   пульт: сессии, тема, мониторы, локальные копии входов
+configuration.nix   пульт: сессии, тема, мониторы, переключатели подсистем
 flake.nix           входы и выходы флейка (система, nix fmt, devShell rust)
 pkgs/               свои пакеты + оверлей, который кладёт их в pkgs.*
 modules/
-  system/           загрузка, nix, сеть, пользователь, rebuild, diag
+  system/           загрузка, nix, сеть, VPN, пользователь, rebuild, diag
   hardware/         переносимость, видео, диск, периферия, звук
   security/         ядро, sudo/polkit/PAM, USBGuard, резервные копии ключей
   desktop/          окно входа, тема, приложения по умолчанию, мониторы
@@ -31,6 +31,41 @@ modules/
 в `environment.systemPackages`, приложение — в `hm.home.packages`, flatpak — в
 `services.flatpak.packages` того же файла.
 
+## Что выключается
+
+Всё, без чего машина обходится, выключается одной строкой в
+`configuration.nix`, в блоке «Подсистемы»: `= false;`. Если строку
+удалить, действует значение по умолчанию, оно указано в комментарии рядом.
+
+| Опция | По умолч. | Что даёт |
+|---|---|---|
+| `custom.network.dnscrypt.enable` | `true` | DNS только шифрованно, через dnscrypt-proxy |
+| `custom.network.tailscale.enable` | `true` | Tailscale |
+| `custom.network.tailscale.exitNode` | `true` | эта машина — выходной узел тайлнета |
+| `custom.secureBoot.enable` | `true` | lanzaboote; `false` — обычный systemd-boot |
+| `custom.security.usbguard.enable` | `true` | новые USB-устройства — только по кнопке |
+| `custom.hardening.signedModulesOnly` | `false` | только подписанные модули ядра |
+| `custom.apps.<группа>.enable` | `true` | `dev`, `games`, `votv`, `media`, `social`, `ai` |
+| `custom.vpn.*` | `false` | VPN и обход блокировок, ниже |
+
+### VPN
+
+Модуль `modules/system/vpn.nix`. Всё выключено, включается по одному
+способу на строку:
+
+| Опция | Род | Как пользоваться |
+|---|---|---|
+| `custom.vpn.amnezia.enable` | туннель | AmneziaVPN, окно; ключ от своего сервера |
+| `custom.vpn.wireguard.enable` | туннель | `nmcli connection import type wireguard file wg0.conf` |
+| `custom.vpn.throne.enable` | прокси | Throne, подписки VLESS/Trojan/…; порт `127.0.0.1:2080` |
+| `custom.vpn.throne.tun` | туннель | Throne на всю систему, а не прокси |
+| `custom.vpn.byedpi.enable` | прокси | обход DPI без сервера, SOCKS5 `127.0.0.1:1080` |
+| `custom.vpn.tor.enable` | прокси | Tor, SOCKS5 `127.0.0.1:9050`; мосты — `custom.vpn.tor.bridges` |
+
+Туннель забирает весь трафик, и поднят должен быть один: два дерутся за
+маршрут, и сеть пропадает. Прокси только слушают порт, работают сколько
+угодно одновременно и вместе с туннелем. Что поднято сейчас — команда `vpn`.
+
 ## Команды
 
 | Команда | Что делает |
@@ -44,6 +79,7 @@ modules/
 | `desktop-env list` / `add` / `remove` / `set` | сессии в окне входа |
 | `bash-theme list` / `set` | тема оболочки |
 | `diag > ~/diag.txt` | состояние системы одним текстом |
+| `vpn` | маршрут, туннели, VPN-службы и прокси на 127.0.0.1 |
 | `secureboot-backup <каталог>` | шифрованная копия ключей Secure Boot |
 | `luks-header-backup <каталог>` | шифрованная копия заголовка LUKS |
 | `nix fmt` | привести репозиторий к nixfmt |
@@ -67,13 +103,15 @@ modules/
    создай `/persist/secrets/<пользователь>-password`
    (`mkpasswd -m yescrypt`), иначе войти будет нельзя.
 4. Secure Boot: lanzaboote ждёт ключи в `/etc/secureboot`
-   (`boot.lanzaboote.pkiBundle`). Как их создать и записать в прошивку —
-   в [документации lanzaboote](https://nix-community.github.io/lanzaboote/).
+   (`boot.lanzaboote.pkiBundle`). Ключей нет — ставь с
+   `custom.secureBoot.enable = false`, а включи, когда создашь и запишешь их
+   в прошивку ([документация lanzaboote](https://nix-community.github.io/lanzaboote/)).
 5. USBGuard пускает то, что воткнуто до загрузки, и устройства из
    `modules/security/usbguard/allowed.rules`. Остальное блокируется до нажатия
    «Разрешить» в уведомлении — впиши туда свои.
-6. Tailscale включён выходным узлом. Не нужен — убери из
-   `modules/system/networking.nix`.
+6. Tailscale включён выходным узлом. Не нужен —
+   `custom.network.tailscale.enable = false`, только клиент —
+   `custom.network.tailscale.exitNode = false`.
 
 ## Лицензия
 

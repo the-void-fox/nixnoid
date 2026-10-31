@@ -5,6 +5,7 @@
     ./boot.nix
     ./locale.nix
     ./networking.nix
+    ./vpn.nix
     ./nix.nix
     ./users.nix
     ./diag
