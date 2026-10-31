@@ -6,17 +6,26 @@
 #     со временем деградирует. Лечится только разом — диск на настоящий SATA
 #     (или мост ASM1351 / JMS578) и `sudo fstrim -av`. Пустое место помогает
 #     лишь отсрочить это.
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
+let
+  luks = "luks-1838232e-2e22-4883-9f75-963db471c501";
+in
 {
   # Пока мост TRIM не пропускает, обе настройки бездействуют. Но удалишь их —
   # и TRIM молча не заработает даже на правильном железе.
   # (Цена allowDiscards: снаружи видно, какие блоки заняты.)
-  boot.initrd.luks.devices."luks-1838232e-2e22-4883-9f75-963db471c501" = {
+  boot.initrd.luks.devices.${luks} = {
     allowDiscards = true;
     bypassWorkqueues = true; # без рабочих очередей dm-crypt — меньше задержек
   };
   services.fstrim.enable = true;
+
+  # Корень — по имени в /dev/mapper, а не по UUID из hardware-configuration.
+  # initrd на systemd ждёт устройство корня по таймауту, и, пока вводишь
+  # пароль LUKS, UUID внутри шифра ещё не виден: замешкался — аварийный режим.
+  # Устройство из /dev/mapper ждёт столько, сколько нужно (заметки к 26.05).
+  fileSystems."/".device = lib.mkForce "/dev/mapper/${luks}";
 
   fileSystems."/".options = [
     "noatime" # меньше мелких записей; один ext4 на всё

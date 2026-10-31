@@ -12,6 +12,10 @@
   };
 
   nix = {
+    # Только флейки. Старый канал root держал в NIX_PATH мартовский nixpkgs;
+    # без каналов `nix-shell -p` и <nixpkgs> берут nixpkgs самой системы.
+    channel.enable = false;
+
     settings = {
       experimental-features = [
         "nix-command"

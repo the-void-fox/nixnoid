@@ -1,12 +1,26 @@
 {
+  config,
   inputs,
   lib,
   pkgs,
   ...
 }:
 
+let
+  keys = config.boot.lanzaboote.pkiBundle;
+in
 {
   imports = [ inputs.lanzaboote.nixosModules.lanzaboote ];
+
+  # sbctl — проверить подписи (`sudo sbctl verify`) и записать ключи в
+  # прошивку (`sudo sbctl enroll-keys --microsoft`). Сам он ищет ключи в
+  # /var/lib/sbctl, а lanzaboote подписывает теми, что в pkiBundle, — путь
+  # задан явно, в том же виде, что пишет сам lanzaboote при autoEnrollKeys.
+  environment.systemPackages = [ pkgs.sbctl ];
+  environment.etc."sbctl/sbctl.conf".text = ''
+    keydir: ${keys}/keys
+    guid: ${keys}/GUID
+  '';
 
   boot = {
     kernelPackages = pkgs.linuxPackages_latest;

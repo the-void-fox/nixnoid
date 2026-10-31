@@ -29,7 +29,9 @@
       "init_on_alloc=1"
       "init_on_free=1"
       "debugfs=off"
-      "vsyscall=emulate"
+      # vsyscall= не задаём: ядро собрано с xonly, а это строже прежнего
+      # emulate — страницу vsyscall нельзя читать. none строже ещё, но
+      # ломает совсем старые бинарники.
 
       # spectre_v2=on не ставим: на этих Intel он навязывает retpoline, и
       # RETBleed остаётся открытым. Ядро само выбирает IBRS — он закрывает оба.

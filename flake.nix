@@ -9,7 +9,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    lanzaboote.url = "github:nix-community/lanzaboote";
+    # Загрузчик — по тегу релиза, а не с master: его сбой — это незагружаемая
+    # система. Без follows: со своим nixpkgs он приходит готовым из кэша
+    # nix-community, а с нашим собирался бы из исходников после каждого update.
+    lanzaboote.url = "github:nix-community/lanzaboote/v1.2.0";
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
     # ── Рабочие столы ──────────────────────────────────────────────────────────
